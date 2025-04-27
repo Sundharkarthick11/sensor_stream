@@ -31,16 +31,6 @@ import {
 } from 'recharts';
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
 
-const data = [
-  {name: 'Jan', uv: 400, pv: 2400, amt: 2400},
-  {name: 'Feb', uv: 300, pv: 1398, amt: 2210},
-  {name: 'Mar', uv: 200, pv: 9800, amt: 2290},
-  {name: 'Apr', uv: 278, pv: 3908, amt: 2000},
-  {name: 'May', uv: 189, pv: 4800, amt: 2181},
-  {name: 'Jun', uv: 239, pv: 3800, amt: 2500},
-  {name: 'Jul', uv: 349, pv: 4300, amt: 2100},
-];
-
 interface SensorData {
   timestamp: number;
   accelerometerX: number;
@@ -162,6 +152,28 @@ export default function Home() {
     });
   };
 
+  const formatXAxis = (tickItem: any) => {
+    const date = new Date(tickItem);
+    return date.toLocaleTimeString(); // Format the timestamp to time
+  };
+
+  const transformDataForChart = (sensorDataList: SensorData[], dataKey: keyof SensorData) => {
+    return sensorDataList.map(data => ({
+      timestamp: data.timestamp,
+      value: data[dataKey],
+    }));
+  };
+
+  const accelerometerDataForChartX = transformDataForChart(sensorDataList, 'accelerometerX');
+  const accelerometerDataForChartY = transformDataForChart(sensorDataList, 'accelerometerY');
+  const accelerometerDataForChartZ = transformDataForChart(sensorDataList, 'accelerometerZ');
+  const gyroscopeDataForChartX = transformDataForChart(sensorDataList, 'gyroscopeX');
+  const gyroscopeDataForChartY = transformDataForChart(sensorDataList, 'gyroscopeY');
+  const gyroscopeDataForChartZ = transformDataForChart(sensorDataList, 'gyroscopeZ');
+  const dadtDataForChart = transformDataForChart(sensorDataList, 'dadt');
+  const gpsLatitudeDataForChart = transformDataForChart(sensorDataList, 'gpsLatitude');
+  const gpsLongitudeDataForChart = transformDataForChart(sensorDataList, 'gpsLongitude');
+
   return (
     <div className="flex flex-col min-h-screen bg-secondary p-6">
       <header className="mb-8">
@@ -189,19 +201,40 @@ export default function Home() {
               <p>X: {accelerometerData.x}</p>
               <p>Y: {accelerometerData.y}</p>
               <p>Z: {accelerometerData.z}</p>
-              <p>
-                Da/dt:{accelerationChange}
-              </p>
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart
-                  data={data}
+                  data={accelerometerDataForChartX}
                   margin={{top: 10, right: 30, left: 0, bottom: 0}}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
                   <YAxis />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="pv" stroke="#8884d8" fill="#8884d8" />
+                  <Tooltip labelFormatter={(time) => new Date(time).toLocaleTimeString()}/>
+                  <Area type="monotone" dataKey="value" stroke="#8884d8" fill="#8884d8" />
+                </AreaChart>
+              </ResponsiveContainer>
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart
+                  data={accelerometerDataForChartY}
+                  margin={{top: 10, right: 30, left: 0, bottom: 0}}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
+                  <YAxis />
+                  <Tooltip labelFormatter={(time) => new Date(time).toLocaleTimeString()}/>
+                  <Area type="monotone" dataKey="value" stroke="#8884d8" fill="#8884d8" />
+                </AreaChart>
+              </ResponsiveContainer>
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart
+                  data={accelerometerDataForChartZ}
+                  margin={{top: 10, right: 30, left: 0, bottom: 0}}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
+                  <YAxis />
+                  <Tooltip labelFormatter={(time) => new Date(time).toLocaleTimeString()}/>
+                  <Area type="monotone" dataKey="value" stroke="#8884d8" fill="#8884d8" />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -218,14 +251,38 @@ export default function Home() {
               <p>Z: {gyroscopeData.z}</p>
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart
-                  data={data}
+                  data={gyroscopeDataForChartX}
                   margin={{top: 10, right: 30, left: 0, bottom: 0}}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
                   <YAxis />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="uv" stroke="#82ca9d" fill="#82ca9d" />
+                  <Tooltip labelFormatter={(time) => new Date(time).toLocaleTimeString()}/>
+                  <Area type="monotone" dataKey="value" stroke="#82ca9d" fill="#82ca9d" />
+                </AreaChart>
+              </ResponsiveContainer>
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart
+                  data={gyroscopeDataForChartY}
+                  margin={{top: 10, right: 30, left: 0, bottom: 0}}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
+                  <YAxis />
+                  <Tooltip labelFormatter={(time) => new Date(time).toLocaleTimeString()}/>
+                  <Area type="monotone" dataKey="value" stroke="#82ca9d" fill="#82ca9d" />
+                </AreaChart>
+              </ResponsiveContainer>
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart
+                  data={gyroscopeDataForChartZ}
+                  margin={{top: 10, right: 30, left: 0, bottom: 0}}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
+                  <YAxis />
+                  <Tooltip labelFormatter={(time) => new Date(time).toLocaleTimeString()}/>
+                  <Area type="monotone" dataKey="value" stroke="#82ca9d" fill="#82ca9d" />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -244,14 +301,14 @@ export default function Home() {
               </p>
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart
-                  data={data}
+                  data={[]}
                   margin={{top: 10, right: 30, left: 0, bottom: 0}}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
                   <YAxis />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="amt" stroke="#ffc658" fill="#ffc658" />
+                  <Tooltip labelFormatter={(time) => new Date(time).toLocaleTimeString()}/>
+                  <Area type="monotone" dataKey="value" stroke="#ffc658" fill="#ffc658" />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
@@ -265,16 +322,50 @@ export default function Home() {
             <CardContent>
               <p>Latitude: {gpsData.latitude}</p>
               <p>Longitude: {gpsData.longitude}</p>
-              <ResponsiveContainer width="100%" height={200}>
+               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart
-                  data={data}
+                  data={gpsLatitudeDataForChart}
                   margin={{top: 10, right: 30, left: 0, bottom: 0}}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
+                  <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
                   <YAxis />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="pv" stroke="#a458ff" fill="#a458ff" />
+                  <Tooltip labelFormatter={(time) => new Date(time).toLocaleTimeString()}/>
+                  <Area type="monotone" dataKey="value" stroke="#a458ff" fill="#a458ff" />
+                </AreaChart>
+              </ResponsiveContainer>
+               <ResponsiveContainer width="100%" height={200}>
+                <AreaChart
+                  data={gpsLongitudeDataForChart}
+                  margin={{top: 10, right: 30, left: 0, bottom: 0}}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
+                  <YAxis />
+                  <Tooltip labelFormatter={(time) => new Date(time).toLocaleTimeString()}/>
+                  <Area type="monotone" dataKey="value" stroke="#a458ff" fill="#a458ff" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Acceleration Rate of Change (Da/dt)</CardTitle>
+              <CardDescription>Realtime change in acceleration</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>Da/dt: {accelerationChange}</p>
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart
+                  data={dadtDataForChart}
+                  margin={{top: 10, right: 30, left: 0, bottom: 0}}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
+                  <YAxis />
+                  <Tooltip labelFormatter={(time) => new Date(time).toLocaleTimeString()}/>
+                  <Area type="monotone" dataKey="value" stroke="#ffc658" fill="#ffc658" />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
