@@ -41,6 +41,19 @@ const data = [
   {name: 'Jul', uv: 349, pv: 4300, amt: 2100},
 ];
 
+interface SensorData {
+  timestamp: number;
+  accelerometerX: number;
+  accelerometerY: number;
+  accelerometerZ: number;
+  gyroscopeX: number;
+  gyroscopeY: number;
+  gyroscopeZ: number;
+  vibration: boolean;
+  gpsLatitude: number;
+  gpsLongitude: number;
+  dadt: number;
+}
 export default function Home() {
   const [accelerometerData, setAccelerometerData] = useState<AccelerometerData>({
     x: 0,
@@ -65,36 +78,62 @@ export default function Home() {
     y: 0,
     z: 0,
   });
-  const [accelerationChange, setAccelerationChange] = useState<AccelerometerData>({
-    x: 0,
-    y: 0,
-    z: 0,
-  });
+  const [accelerationChange, setAccelerationChange] = useState<number>(0);
+  const [prevTime, setPrevTime] = useState<number>(0);
+  const [prevAccel, setPrevAccel] = useState<number>(0);
+
+  const [sensorDataList, setSensorDataList] = useState<SensorData[]>([]);
 
   const {toast} = useToast();
 
   const refreshSensorData = async () => {
     try {
       const acceleration = await getAcceleration();
-      setAccelerometerData(acceleration);
+      const gyroscope = await getGyroscopeData();
+      const vibration = await getVibrationData();
+      const gps = await getCurrentLocation();
 
-      // Calculate the change in acceleration
-      setAccelerationChange({
-        x: acceleration.x - prevAccelerometerData.x,
-        y: acceleration.y - prevAccelerometerData.y,
-        z: acceleration.z - prevAccelerometerData.z,
-      });
+      const accelX = acceleration.x;
+      const accelY = acceleration.y;
+      const accelZ = acceleration.z;
+
+      // Compute total acceleration magnitude
+      const totalAccel = Math.sqrt(accelX * accelX + accelY * accelY + accelZ * accelZ);
+
+      // Compute da/dt
+      const currentTime = Date.now();
+      const dt = (currentTime - prevTime) / 1000.0;
+      let dadt = 0;
+      if (dt > 0) {
+        dadt = Math.abs((totalAccel - prevAccel) / dt);
+      }
+
+      setAccelerometerData(acceleration);
+      setGyroscopeData(gyroscope);
+      setVibrationData(vibration);
+      setGpsData(gps);
+      setAccelerationChange(dadt);
 
       setPrevAccelerometerData(acceleration);
+      setPrevTime(currentTime);
+      setPrevAccel(totalAccel);
 
-      const gyroscope = await getGyroscopeData();
-      setGyroscopeData(gyroscope);
-
-      const vibration = await getVibrationData();
-      setVibrationData(vibration);
-
-      const gps = await getCurrentLocation();
-      setGpsData(gps);
+      setSensorDataList(prevList => [
+        {
+          timestamp: currentTime,
+          accelerometerX: acceleration.x,
+          accelerometerY: acceleration.y,
+          accelerometerZ: acceleration.z,
+          gyroscopeX: gyroscope.x,
+          gyroscopeY: gyroscope.y,
+          gyroscopeZ: gyroscope.z,
+          vibration: vibration.isVibrating,
+          gpsLatitude: gps.latitude,
+          gpsLongitude: gps.longitude,
+          dadt: dadt,
+        },
+        ...prevList,
+      ]);
     } catch (error: any) {
       toast({
         title: 'Error refreshing sensor data',
@@ -151,8 +190,7 @@ export default function Home() {
               <p>Y: {accelerometerData.y}</p>
               <p>Z: {accelerometerData.z}</p>
               <p>
-                ∆X: {accelerationChange.x}, ∆Y: {accelerationChange.y}, ∆Z:{' '}
-                {accelerationChange.z}
+                Da/dt:{accelerationChange}
               </p>
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart
@@ -250,42 +288,35 @@ export default function Home() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Sensor</TableHead>
-              <TableHead>X</TableHead>
-              <TableHead>Y</TableHead>
-              <TableHead>Z</TableHead>
-              <TableHead>Additional Info</TableHead>
+              <TableHead>Timestamp</TableHead>
+              <TableHead>Accelerometer X</TableHead>
+              <TableHead>Accelerometer Y</TableHead>
+              <TableHead>Accelerometer Z</TableHead>
+              <TableHead>Gyroscope X</TableHead>
+              <TableHead>Gyroscope Y</TableHead>
+              <TableHead>Gyroscope Z</TableHead>
+              <TableHead>Vibration</TableHead>
+              <TableHead>GPS Latitude</TableHead>
+              <TableHead>GPS Longitude</TableHead>
+              <TableHead>Da/dt</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow>
-              <TableCell>Accelerometer</TableCell>
-              <TableCell>{accelerometerData.x}</TableCell>
-              <TableCell>{accelerometerData.y}</TableCell>
-              <TableCell>{accelerometerData.z}</TableCell>
-              <TableCell>∆X: {accelerationChange.x}, ∆Y: {accelerationChange.y}, ∆Z: {accelerationChange.z}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Gyroscope</TableCell>
-              <TableCell>{gyroscopeData.x}</TableCell>
-              <TableCell>{gyroscopeData.y}</TableCell>
-              <TableCell>{gyroscopeData.z}</TableCell>
-              <TableCell>-</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Vibration</TableCell>
-              <TableCell>-</TableCell>
-              <TableCell>-</TableCell>
-              <TableCell>-</TableCell>
-              <TableCell>Vibrating: {vibrationData.isVibrating ? 'Yes' : 'No'}</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>GPS</TableCell>
-              <TableCell>{gpsData.latitude}</TableCell>
-              <TableCell>{gpsData.longitude}</TableCell>
-              <TableCell>-</TableCell>
-              <TableCell>-</TableCell>
-            </TableRow>
+            {sensorDataList.map((data) => (
+              <TableRow key={data.timestamp}>
+                <TableCell>{new Date(data.timestamp).toLocaleString()}</TableCell>
+                <TableCell>{data.accelerometerX}</TableCell>
+                <TableCell>{data.accelerometerY}</TableCell>
+                <TableCell>{data.accelerometerZ}</TableCell>
+                <TableCell>{data.gyroscopeX}</TableCell>
+                <TableCell>{data.gyroscopeY}</TableCell>
+                <TableCell>{data.gyroscopeZ}</TableCell>
+                <TableCell>{data.vibration ? 'Yes' : 'No'}</TableCell>
+                <TableCell>{data.gpsLatitude}</TableCell>
+                <TableCell>{data.gpsLongitude}</TableCell>
+                <TableCell>{data.dadt}</TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </section>
