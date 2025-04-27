@@ -120,7 +120,7 @@ void loop() {
 
     // Check for sudden changes in acceleration
     if (dadt > threshold_dadt && totalAccel < 5.0) {
-        Serial.println("⚠️ Sudden da/dt change detected! Object stopped abruptly.");
+        //Serial.println("⚠️ Sudden da/dt change detected! Object stopped abruptly.");
     }
    // Read GPS data
     while (gpsSerial.available() > 0) {
@@ -170,5 +170,5 @@ void loop() {
     prevAccel = totalAccel;
     prevTime = currentTime;
 
-    delay(5000); // Send data every 5 seconds
+    delay(100); // Send data every 100 milliseconds
 }
