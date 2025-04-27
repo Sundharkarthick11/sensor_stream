@@ -1,4 +1,3 @@
-
 'use client';
 
 import {useEffect, useState} from 'react';
@@ -17,7 +16,7 @@ import {
 } from '@/services/vibration';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 import {Grid} from '@/components/ui/grid';
-import {Download, Gps, Impact, RefreshCw} from 'lucide-react';
+import {Download, RefreshCw} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {toast} from '@/hooks/use-toast';
 import {useToast} from '@/hooks/use-toast';
@@ -30,6 +29,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from '@/components/ui/table';
 
 const data = [
   {name: 'Jan', uv: 400, pv: 2400, amt: 2400},
@@ -40,10 +40,6 @@ const data = [
   {name: 'Jun', uv: 239, pv: 3800, amt: 2500},
   {name: 'Jul', uv: 349, pv: 4300, amt: 2100},
 ];
-
-function getRandomValue() {
-  return Math.floor(Math.random() * 100); // Returns a random integer between 0 and 99
-}
 
 export default function Home() {
   const [accelerometerData, setAccelerometerData] = useState<AccelerometerData>({
@@ -64,12 +60,32 @@ export default function Home() {
     longitude: 0,
   });
 
+  const [prevAccelerometerData, setPrevAccelerometerData] = useState<AccelerometerData>({
+    x: 0,
+    y: 0,
+    z: 0,
+  });
+  const [accelerationChange, setAccelerationChange] = useState<AccelerometerData>({
+    x: 0,
+    y: 0,
+    z: 0,
+  });
+
   const {toast} = useToast();
 
   const refreshSensorData = async () => {
     try {
       const acceleration = await getAcceleration();
       setAccelerometerData(acceleration);
+
+      // Calculate the change in acceleration
+      setAccelerationChange({
+        x: acceleration.x - prevAccelerometerData.x,
+        y: acceleration.y - prevAccelerometerData.y,
+        z: acceleration.z - prevAccelerometerData.z,
+      });
+
+      setPrevAccelerometerData(acceleration);
 
       const gyroscope = await getGyroscopeData();
       setGyroscopeData(gyroscope);
@@ -97,7 +113,7 @@ export default function Home() {
 
     // Clean up the interval when the component unmounts
     return () => clearInterval(intervalId);
-  }, []);
+  }, [prevAccelerometerData]);
 
   const downloadCSV = () => {
     // Implement CSV download logic here
@@ -134,6 +150,10 @@ export default function Home() {
               <p>X: {accelerometerData.x}</p>
               <p>Y: {accelerometerData.y}</p>
               <p>Z: {accelerometerData.z}</p>
+              <p>
+                ∆X: {accelerationChange.x}, ∆Y: {accelerationChange.y}, ∆Z:{' '}
+                {accelerationChange.z}
+              </p>
               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart
                   data={data}
@@ -222,6 +242,52 @@ export default function Home() {
             </CardContent>
           </Card>
         </Grid>
+      </section>
+      <section className="mb-8">
+        <h2 className="text-2xl font-semibold text-primary mb-4">
+          Sensor Data Table
+        </h2>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Sensor</TableHead>
+              <TableHead>X</TableHead>
+              <TableHead>Y</TableHead>
+              <TableHead>Z</TableHead>
+              <TableHead>Additional Info</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>Accelerometer</TableCell>
+              <TableCell>{accelerometerData.x}</TableCell>
+              <TableCell>{accelerometerData.y}</TableCell>
+              <TableCell>{accelerometerData.z}</TableCell>
+              <TableCell>∆X: {accelerationChange.x}, ∆Y: {accelerationChange.y}, ∆Z: {accelerationChange.z}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Gyroscope</TableCell>
+              <TableCell>{gyroscopeData.x}</TableCell>
+              <TableCell>{gyroscopeData.y}</TableCell>
+              <TableCell>{gyroscopeData.z}</TableCell>
+              <TableCell>-</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Vibration</TableCell>
+              <TableCell>-</TableCell>
+              <TableCell>-</TableCell>
+              <TableCell>-</TableCell>
+              <TableCell>Vibrating: {vibrationData.isVibrating ? 'Yes' : 'No'}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>GPS</TableCell>
+              <TableCell>{gpsData.latitude}</TableCell>
+              <TableCell>{gpsData.longitude}</TableCell>
+              <TableCell>-</TableCell>
+              <TableCell>-</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </section>
 
       <footer className="flex justify-between items-center">
