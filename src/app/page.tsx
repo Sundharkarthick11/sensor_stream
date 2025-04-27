@@ -189,7 +189,8 @@ export default function Home() {
         <h2 className="text-2xl font-semibold text-primary mb-4">
           Live Sensor Data
         </h2>
-        <Grid>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* First Row: Accelerometer and Da/dt */}
           <Card>
             <CardHeader>
               <CardTitle>Accelerometer</CardTitle>
@@ -201,7 +202,7 @@ export default function Home() {
               <p>X: {accelerometerData.x}</p>
               <p>Y: {accelerometerData.y}</p>
               <p>Z: {accelerometerData.z}</p>
-              <ResponsiveContainer width="100%" height={200}>
+               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart
                   data={accelerometerDataForChartX}
                   margin={{top: 10, right: 30, left: 0, bottom: 0}}
@@ -213,7 +214,7 @@ export default function Home() {
                   <Area type="monotone" dataKey="value" stroke="#8884d8" fill="#8884d8" />
                 </AreaChart>
               </ResponsiveContainer>
-              <ResponsiveContainer width="100%" height={200}>
+               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart
                   data={accelerometerDataForChartY}
                   margin={{top: 10, right: 30, left: 0, bottom: 0}}
@@ -225,7 +226,7 @@ export default function Home() {
                   <Area type="monotone" dataKey="value" stroke="#8884d8" fill="#8884d8" />
                 </AreaChart>
               </ResponsiveContainer>
-              <ResponsiveContainer width="100%" height={200}>
+               <ResponsiveContainer width="100%" height={200}>
                 <AreaChart
                   data={accelerometerDataForChartZ}
                   margin={{top: 10, right: 30, left: 0, bottom: 0}}
@@ -240,6 +241,28 @@ export default function Home() {
             </CardContent>
           </Card>
 
+          <Card>
+            <CardHeader>
+              <CardTitle>Acceleration Rate of Change (Da/dt)</CardTitle>
+              <CardDescription>Realtime change in acceleration</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p>Da/dt: {accelerationChange}</p>
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart
+                  data={dadtDataForChart}
+                  margin={{top: 10, right: 30, left: 0, bottom: 0}}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
+                  <YAxis />
+                  <Tooltip labelFormatter={(time) => new Date(time).toLocaleTimeString()}/>
+                  <Area type="monotone" dataKey="value" stroke="#ffc658" fill="#ffc658" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+          {/* Second Row: Gyroscope and Vibration */}
           <Card>
             <CardHeader>
               <CardTitle>Gyroscope</CardTitle>
@@ -313,8 +336,8 @@ export default function Home() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-
-          <Card>
+          {/* Third Row: GPS */}
+          <Card className="md:col-span-2">
             <CardHeader>
               <CardTitle>GPS</CardTitle>
               <CardDescription>Realtime GPS data</CardDescription>
@@ -322,7 +345,7 @@ export default function Home() {
             <CardContent>
               <p>Latitude: {gpsData.latitude}</p>
               <p>Longitude: {gpsData.longitude}</p>
-               <ResponsiveContainer width="100%" height={200}>
+              <ResponsiveContainer width="100%" height={200}>
                 <AreaChart
                   data={gpsLatitudeDataForChart}
                   margin={{top: 10, right: 30, left: 0, bottom: 0}}
@@ -334,7 +357,7 @@ export default function Home() {
                   <Area type="monotone" dataKey="value" stroke="#a458ff" fill="#a458ff" />
                 </AreaChart>
               </ResponsiveContainer>
-               <ResponsiveContainer width="100%" height={200}>
+              <ResponsiveContainer width="100%" height={200}>
                 <AreaChart
                   data={gpsLongitudeDataForChart}
                   margin={{top: 10, right: 30, left: 0, bottom: 0}}
@@ -348,29 +371,7 @@ export default function Home() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Acceleration Rate of Change (Da/dt)</CardTitle>
-              <CardDescription>Realtime change in acceleration</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p>Da/dt: {accelerationChange}</p>
-              <ResponsiveContainer width="100%" height={200}>
-                <AreaChart
-                  data={dadtDataForChart}
-                  margin={{top: 10, right: 30, left: 0, bottom: 0}}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="timestamp" tickFormatter={formatXAxis} />
-                  <YAxis />
-                  <Tooltip labelFormatter={(time) => new Date(time).toLocaleTimeString()}/>
-                  <Area type="monotone" dataKey="value" stroke="#ffc658" fill="#ffc658" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </Grid>
+        </div>
       </section>
       <section className="mb-8">
         <h2 className="text-2xl font-semibold text-primary mb-4">
